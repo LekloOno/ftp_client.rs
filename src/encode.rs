@@ -1,4 +1,3 @@
-pub mod encoders;
 pub mod error;
 
 pub type Result<T> = std::result::Result<T, error::Error>;
@@ -11,5 +10,6 @@ pub trait FtpEncoder {
 
     fn hyphen(&self) -> &'static [u8];
     
-    fn read_resp_code(&self, stream: &mut dyn std::io::Read) -> Result<u8>;
+    fn response_code_len(&self) -> usize;
+    fn decode_response_code(&self, bytes: &[u8]) -> Result<u8>;
 }

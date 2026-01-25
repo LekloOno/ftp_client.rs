@@ -2,6 +2,7 @@ pub mod stream;
 pub mod response;
 pub mod encode;
 pub mod error;
+pub mod basic;
 
 use crate::{
     response::FtpResponse,
@@ -18,7 +19,7 @@ pub type Result<T> = std::result::Result<T, error::Error>;
 mod private {
     pub trait FtpClientInternal {
         fn stream(&self) -> &dyn super::FtpStream;
-        fn stream_mut(&self) -> &mut dyn super::FtpStream;
+        fn stream_mut(&mut self) -> &mut dyn super::FtpStream;
         fn encoder(&self) -> &dyn super::encode::FtpEncoder;
     } 
 }
@@ -27,12 +28,16 @@ pub use private::FtpClientInternal as FtpClientInternal;
 
 
 pub trait FtpClient: private::FtpClientInternal {
-    fn new(hostname: String) -> io::Result<Self> where Self: Sized;
+    fn new(hostname: String) -> Result<Self> where Self: Sized;
 
     fn send_command(&mut self, command: &str) -> Result<()> {
         let encoded = self
             .encoder()
             .encode(&command)?;
+
+        let crlf = self
+            .encoder()
+            .crlf();
         
         let ctrl_write = self
             .stream_mut()
@@ -41,7 +46,7 @@ pub trait FtpClient: private::FtpClientInternal {
         ctrl_write
             .write_all(encoded)
             .and_then(|_| ctrl_write
-                .write_all(self.encoder().crlf()))
+                .write_all(crlf))
             .map_err(|e| error::Error::ControlStreamError(e))
     }
 
@@ -54,22 +59,20 @@ pub trait FtpClient: private::FtpClientInternal {
     }
 
     fn read_response(&mut self) -> Result<FtpResponse> {
-        let ctrl_read = self
-            .stream_mut()
-            .control_read();
-
-        let code = self.encoder().read_resp_code(ctrl_read)?;
-        
-        
-        let mut buf_reader = io::BufReader::new(ctrl_read);
-        let content = buf_reader.fill_buf()?;
+        let code = read_response_code(self)?;
 
         let hyphen = self.encoder().hyphen();
+        let crlf = self.encoder().crlf();
+
+        let mut buf_reader = io::BufReader::new(
+            self.stream_mut().control_read()
+        );
+        let content = buf_reader.fill_buf()?;
+
         if content.starts_with(&hyphen) {
             todo!("Multiline responses not handled yet.");
         }
 
-        let crlf = self.encoder().crlf();
         let finder = memchr::memmem::Finder::new(crlf);
         
         let n_read = finder.find(content).unwrap(); // LAZY UNWRAP
@@ -80,4 +83,19 @@ pub trait FtpClient: private::FtpClientInternal {
 
         Ok(response)
     }
+}
+
+fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<u8> {
+    let code_len = client.encoder().response_code_len();
+    let mut code_bytes = vec![0u8; code_len];
+        
+    client
+        .stream_mut()
+        .control_read()
+        .read_exact(&mut code_bytes)?;
+    
+    client
+        .encoder()
+        .decode_response_code(&code_bytes)
+        .map_err(|e| error::Error::EncoderError(e))
 }

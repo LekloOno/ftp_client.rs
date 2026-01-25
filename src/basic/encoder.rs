@@ -15,16 +15,18 @@ impl FtpEncoder for Utf8FtpEncoder {
 
     fn crlf(&self) -> &'static [u8] { b"\r\n" }
     fn hyphen(&self) -> &'static [u8] { b"-" }
-
-    fn read_resp_code(&self, stream: &mut dyn std::io::Read) -> Result<u8> {
-        let mut code_bytes = [0u8; 3];
+    
+    fn response_code_len(&self) -> usize {
+        3
+    }
+    
+    fn decode_response_code(&self, bytes: &[u8]) -> Result<u8> {
+        if bytes.len() != 3 {
+            return Err(Error::DecodingError);
+        }
         
-        stream
-            .read_exact(&mut code_bytes)
-            .map_err(|_| Error::DecodingError)?;
-
         let mut value = 0;
-        for d in code_bytes {
+        for d in bytes {
             value = value * 10 + (d - b'0');
         }
 
