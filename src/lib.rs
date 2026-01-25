@@ -80,13 +80,57 @@ mod private {
         /// # Returns
         /// Return description
         fn encoder(&self) -> &dyn super::FtpEncoder;
+        /// Builds a new concrete [`FtpClientInternal`] over the provided `hostname` and optional `port`.
+        ///
+        /// # Arguments
+        /// * hostname - The hostname of the FTP host, which can be a plain text IP.
+        /// * ctrl_port - The port to use to set the control stream.
+        ///
+        /// # Returns
+        /// A concrete instance of the implementing [`FtpClientInternal`] with a control port connected to the provided host.
+        /// 
+        /// # Errors
+        /// To be specified by the implementor.
+        /// See [`super::error::Error`].
+        fn new(hostname: &str, ctrl_port: &str) -> super::Result<Self> where Self: Sized;
     } 
 }
 
 pub use private::FtpClientInternal as FtpClientInternal;
 
+/// Describes the exposed interface of an FTP client.
+/// For further information on the internal behaviors of an [`FtpClient`], 
+/// you may read [`private::FtpClientInternal`].
+/// 
+/// The [`FtpClient`] is meant to abstract away any communication with the client in 
+/// an explicit rust-idiomatic API.
+/// 
+/// It should ideally be used in pair with [`command::FtpCommand`].
+/// Typically, for full explicitness, you wouldn't directly call [`FtpClient::send_command`] 
+/// but rather build a command, and send it over the client.
 pub trait FtpClient: private::FtpClientInternal {
-    fn new(hostname: &str, port: Option<&str>) -> Result<Self> where Self: Sized;
+    /// Builds a new concrete [`FtpClient`] over the provided `hostname` and optional `port`.
+    ///
+    /// # Arguments
+    /// * hostname - The hostname of the FTP host, which can be a plain-text IP.
+    /// * ctrl_port - Optional specific port of the control stream.
+    ///     If `None`, uses the default port `21`.
+    ///
+    /// # Returns
+    /// A concrete instance of the implementing [`FtpClient`] with a control port connected to the provided host.
+    /// 
+    /// # Errors
+    /// Specific to the implementation.
+    /// Would typically be things as a [`FtpStream`] [`stream::error::Error`] encapsulation.
+    /// See [`error::Error`].
+    fn new(hostname: &str, ctrl_port: Option<&str>) -> Result<Self> where Self: Sized {
+        let eport = match ctrl_port {
+            Some(p) => p,
+            None => "21",
+        };
+
+        <Self as FtpClientInternal>::new(hostname, eport)
+    }
 
     fn send_command(&mut self, command: &str) -> Result<()> {
         let encoded = self

@@ -17,13 +17,13 @@ impl FtpClientInternal for TcpFtpClient {
     fn encoder(&self) -> &dyn crate::encode::FtpEncoder {
         &self.encoder
     }
-}
 
-impl FtpClient for TcpFtpClient {
-    fn new(hostname: &str, port: Option<&str>) -> crate::Result<Self> where Self: Sized {
+    fn new(hostname: &str, ctrl_port: &str) -> crate::Result<Self> where Self: Sized {
         Ok(Self {
-            stream: TcpFtpStream::new(hostname, port)?,
+            stream: TcpFtpStream::new(hostname, ctrl_port)?,
             encoder: Utf8FtpEncoder{},
         })
     }
 }
+
+impl FtpClient for TcpFtpClient {}
