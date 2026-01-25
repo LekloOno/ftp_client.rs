@@ -11,5 +11,5 @@ pub trait FtpEncoder {
 
     fn hyphen(&self) -> &'static [u8];
     
-    fn read_resp_code(&self, stream: &mut dyn std::io::Read) -> std::io::Result<u8>;
+    fn read_resp_code(&self, stream: &mut dyn std::io::Read) -> Result<u8>;
 }
