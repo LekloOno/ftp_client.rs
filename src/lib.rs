@@ -21,7 +21,7 @@ mod private {
     /// The methods implemented by this trait are meant to be used indirectly by
     /// the [`super::FtpClient`], not by the user. You shouldn't call any of these methods.
     /// 
-    /// # Composition
+    /// # Notes
     /// The trait enables the composition of a concrete [`super::FtpClient`].
     /// More precisely, an [`FtpClientInternal`] is defined by composing it with
     /// - any [`super::FtpStream`] implementation
@@ -49,13 +49,16 @@ mod private {
     /// instead of dynamically dispatched. To argue.
     pub trait FtpClientInternal {
         /// Retrieves the current immutable FTP stream of the client.
-        /// This assumes the client has only one stream, this might be improved later
-        /// to enable asynchronous communications.
         /// 
+        /// # Notes
         /// For most operations, a mutable reference is required.
         /// This could eventually be used to peek in the stream. 
         /// 
         /// See [`super::FtpStream`] documentation for more.
+        /// 
+        /// # Implementation details
+        /// This assumes the client has only one stream, this might be improved later
+        /// to enable asynchronous communications.
         ///
         /// # Returns
         /// An immutable reference to the current FTP stream of the client.
@@ -71,11 +74,10 @@ mod private {
         fn stream_mut(&mut self) -> &mut dyn super::FtpStream;
         /// Retrieves the current encoder used by the client.
         ///
+        /// # Notes
         /// FTP is agnostic on the exact encoding method used for its telnet strings.
-        /// This allows to 
-        /// # Arguments
-        /// * param1 - description
-        /// * param2 - description
+        /// This allows to dynamically interchange the encoding format used to match the host's,
+        /// typically in tandem with the `FEAT` command.
         ///
         /// # Returns
         /// Return description
