@@ -5,6 +5,8 @@ pub mod error;
 
 use crate::stream::FtpStream;
 
+use std::io;
+
 
 pub type Result<T> = std::result::Result<T, error::Error>;
 
@@ -19,3 +21,24 @@ mod private {
 }
 
 pub use private::FtpClientInternal as FtpClientInternal;
+
+
+pub trait FtpClient: private::FtpClientInternal {
+    fn new(hostname: String) -> io::Result<Self> where Self: Sized;
+
+    fn send_command(&mut self, command: &str) -> Result<()> {
+        let encoded = self
+            .encoder()
+            .encode(&command)?;
+        
+        let ctrl_write = self
+            .stream_mut()
+            .control_write();
+            
+        ctrl_write
+            .write_all(encoded)
+            .and_then(|_| ctrl_write
+                .write_all(self.encoder().crlf()))
+            .map_err(|e| error::Error::ControlStreamError(e))
+    }
+}
