@@ -28,7 +28,7 @@ pub use private::FtpClientInternal as FtpClientInternal;
 
 
 pub trait FtpClient: private::FtpClientInternal {
-    fn new(hostname: String) -> Result<Self> where Self: Sized;
+    fn new(hostname: &str, port: Option<&str>) -> Result<Self> where Self: Sized;
 
     fn send_command(&mut self, command: &str) -> Result<()> {
         let encoded = self
