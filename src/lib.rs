@@ -3,6 +3,7 @@ pub mod response;
 pub mod encode;
 pub mod error;
 pub mod basic;
+pub mod command;
 
 use crate::{
     response::FtpResponse,
