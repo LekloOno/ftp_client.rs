@@ -1,16 +1,15 @@
-use crate::stream::FtpStream;
+use crate::FtpClient;
 
 pub mod error;
 
 pub type Result<T> = std::result::Result<T, error::Error>;
 
 pub trait FtpCommand {
-    fn send(&self, stream: &mut dyn FtpStream) -> Result<()> {
-        stream
-            .control_write()
-            .write_all(self.as_bytes())
+    fn send(&self, client: &mut dyn FtpClient) -> Result<()> {
+        client
+            .send_command(self.as_str())
             .map_err(error::Error::from)
     }
 
-    fn as_bytes(&self) -> &[u8];
+    fn as_str(&self) -> &str;
 }
