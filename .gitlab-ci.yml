@@ -1,0 +1,17 @@
+image: rust:latest
+
+stages:
+  - docs
+
+pages:
+  stage: docs
+  script:
+    - cargo doc --no-deps
+    - mkdir -p public
+    - cp -r target/doc/* public/
+    - echo '<meta http-equiv="refresh" content="0; url=my_crate/index.html">' > public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
