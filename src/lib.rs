@@ -3,9 +3,12 @@ pub mod response;
 pub mod encode;
 pub mod error;
 
-use crate::stream::FtpStream;
+use crate::{
+    response::FtpResponse,
+    stream::FtpStream
+};
 
-use std::io;
+use std::io::{self, BufRead};
 
 
 pub type Result<T> = std::result::Result<T, error::Error>;
@@ -48,5 +51,33 @@ pub trait FtpClient: private::FtpClientInternal {
             .ok_or(error::Error::WriteUnitializedDataStream)?
             .write_all(data)
             .map_err(|e| error::Error::DataStreamError(e))
+    }
+
+    fn read_response(&mut self) -> Result<FtpResponse> {
+        let ctrl_read = self
+            .stream_mut()
+            .control_read();
+
+        let code = self.encoder().read_resp_code(ctrl_read)?;
+        
+        
+        let mut buf_reader = io::BufReader::new(ctrl_read);
+        let content = buf_reader.fill_buf()?;
+
+        let hyphen = self.encoder().hyphen();
+        if content.starts_with(&hyphen) {
+            todo!("Multiline responses not handled yet.");
+        }
+
+        let crlf = self.encoder().crlf();
+        let finder = memchr::memmem::Finder::new(crlf);
+        
+        let n_read = finder.find(content).unwrap(); // LAZY UNWRAP
+        let body = &content[..n_read + crlf.len()];
+        let response = FtpResponse::new(code, body);
+
+        buf_reader.consume(n_read + crlf.len());
+
+        Ok(response)
     }
 }
