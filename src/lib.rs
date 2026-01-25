@@ -99,8 +99,11 @@ mod private {
 pub use private::FtpClientInternal as FtpClientInternal;
 
 /// Describes the exposed interface of an FTP client.
-/// For further information on the internal behaviors of an [`FtpClient`], 
-/// you may read [`private::FtpClientInternal`].
+/// 
+/// This trait is fully pre-implemented upon the
+/// underlying [`FtpClientInternal`] trait.
+/// A blanket implementation already implements [`FtpClient`]
+/// on any `T` implementing [`FtpClientInternal`].
 /// 
 /// The [`FtpClient`] is meant to abstract away any communication with the client in 
 /// an explicit rust-idiomatic API.
@@ -108,7 +111,7 @@ pub use private::FtpClientInternal as FtpClientInternal;
 /// It should ideally be used in pair with [`command::FtpCommand`].
 /// Typically, for full explicitness, you wouldn't directly call [`FtpClient::send_command`] 
 /// but rather build a command, and send it over the client.
-pub trait FtpClient: private::FtpClientInternal {
+pub trait FtpClient: FtpClientInternal {
     /// Builds a new concrete [`FtpClient`] over the provided `hostname` and optional `port`.
     ///
     /// # Arguments
@@ -201,3 +204,5 @@ fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<u8> {
         .decode_response_code(&code_bytes)
         .map_err(|e| error::Error::EncoderError(e))
 }
+
+impl<T: FtpClientInternal> FtpClient for T {}

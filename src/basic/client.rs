@@ -1,4 +1,4 @@
-use crate::{FtpClient, FtpClientInternal, basic::{encoder::Utf8FtpEncoder, stream::TcpFtpStream}, stream::FtpStream};
+use crate::{FtpClientInternal, basic::{encoder::Utf8FtpEncoder, stream::TcpFtpStream}, stream::FtpStream};
 
 pub struct TcpFtpClient {
     stream: TcpFtpStream,
@@ -25,5 +25,3 @@ impl FtpClientInternal for TcpFtpClient {
         })
     }
 }
-
-impl FtpClient for TcpFtpClient {}
