@@ -1,7 +1,7 @@
 use std::net::TcpStream;
 
 use crate::stream::{FtpStream, Result};
-use crate::stream::error::Error;
+use crate::stream::Error;
 
 pub struct TcpFtpStream {
     control: TcpStream,

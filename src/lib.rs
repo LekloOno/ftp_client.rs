@@ -9,12 +9,12 @@ pub use crate::{
     response::FtpSuccessRes,
     stream::FtpStream,
     encode::FtpEncoder,
+    error::Error,
 };
 
 use std::io::{self, BufRead};
 
-
-pub type Result<T> = std::result::Result<T, error::Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 mod private {
     /// Describes the base abstraction for an [`super::FtpClient`] internal behaviors.
@@ -93,7 +93,7 @@ mod private {
         /// 
         /// # Errors
         /// To be specified by the implementor.
-        /// See [`super::error::Error`].
+        /// See [`super::Error`].
         fn new(hostname: &str, ctrl_port: &str) -> super::Result<Self> where Self: Sized;
     } 
 }
@@ -127,8 +127,8 @@ pub trait FtpClient: FtpClientInternal {
     /// 
     /// # Errors
     /// Specific to the implementation.
-    /// Would typically be things as a [`FtpStream`] [`stream::error::Error`] encapsulation.
-    /// See [`error::Error`].
+    /// Would typically be things as a [`FtpStream`] [`stream::Error`] encapsulation.
+    /// See [`Error`].
     fn new(hostname: &str, ctrl_port: Option<&str>) -> Result<Self> where Self: Sized {
         let eport = match ctrl_port {
             Some(p) => p,
@@ -154,8 +154,8 @@ pub trait FtpClient: FtpClientInternal {
     /// 
     /// # Errors
     /// Common errors accross implementations are -
-    /// - [`error::Error::EncoderError`] if the encoder fails encoding the command, see [`encode::error::Error`].
-    /// - [`error::Error::ControlStreamError`] if an error occured while writing to the control stream, see [`stream::error::Error`].
+    /// - [`Error::EncoderError`] if the encoder fails encoding the command, see [`encode::Error`].
+    /// - [`Error::ControlStreamError`] if an error occured while writing to the control stream, see [`stream::Error`].
     fn send_command(&mut self, command: &str) -> Result<()> {
         let encoded = self
             .encoder()
@@ -173,7 +173,7 @@ pub trait FtpClient: FtpClientInternal {
             .write_all(encoded)
             .and_then(|_| ctrl_write
                 .write_all(crlf))
-            .map_err(|e| error::Error::ControlStreamError(e))
+            .map_err(|e| Error::ControlStreamError(e))
     }
     /// Sends the content of the bytes buffer over the data stream.  
     ///
@@ -182,21 +182,21 @@ pub trait FtpClient: FtpClientInternal {
     /// 
     /// # Errors
     /// Common errors accross implementations are -
-    /// - [`error::Error::WriteUnitializedDataStream`] if there is no data stream initialized.
-    /// - [`error::Error::DataStreamError`] if an error occured while writing to the data stream, see [`stream::error::Error`].
+    /// - [`Error::WriteUnitializedDataStream`] if there is no data stream initialized.
+    /// - [`Error::DataStreamError`] if an error occured while writing to the data stream, see [`stream::Error`].
     fn send_data(&mut self, data: &[u8]) -> Result<()> {
         self.stream_mut()
             .data_write()
-            .ok_or(error::Error::WriteUnitializedDataStream)?
+            .ok_or(Error::WriteUnitializedDataStream)?
             .write_all(data)
-            .map_err(|e| error::Error::DataStreamError(e))
+            .map_err(|e| Error::DataStreamError(e))
     }
     /// Reads and retrieves a response from the control stream.
     /// 
     /// # Notes
     /// The method extract the underlying [`FtpSuccessRes`] if the response is successfull,
-    /// or propagate the response as an [`error::Error::ResponseError`] if it is either an
-    /// [`response::error::error::FtpErrorRes`] or an [`response::error::failure::FtpFailureRes`]. 
+    /// or propagate the response as an [`Error::ResponseError`] if it is either an
+    /// [`response::FtpErrorRes`] or an [`response::FtpFailureRes`]. 
     /// 
     /// # Panics
     /// Multiline responses are not handled yet.
@@ -210,10 +210,10 @@ pub trait FtpClient: FtpClientInternal {
     /// 
     /// # Errors
     /// Common errors accros implementations are -
-    /// - [`error::Error::ResponseError`] if a response has been successfully read, but contained an error or failure code.
-    ///     see [`response::error::error::FtpErrorRes`] and [`response::error::failure::FtpFailureRes`].
-    /// - [`error::Error::ControlStreamError`] if an error occured while reading the control stream, see [`stream::error::Error`].
-    /// - [`error::Error::IoError`] if an error occured while buffer-reading the control stream, see [`io::error::Error`].
+    /// - [`Error::ResponseError`] if a response has been successfully read, but contained an error or failure code.
+    ///     see [`response::FtpErrorRes`] and [`response::FtpFailureRes`].
+    /// - [`Error::ControlStreamError`] if an error occured while reading the control stream, see [`stream::Error`].
+    /// - [`Error::IoError`] if an error occured while buffer-reading the control stream, see [`io::Error`].
     fn read_response(&mut self) -> Result<FtpSuccessRes> {
         let code = read_response_code(self)?;
 
@@ -237,7 +237,7 @@ pub trait FtpClient: FtpClientInternal {
 
         buf_reader.consume(n_read + crlf.len());
 
-        response.map_err(error::Error::from)
+        response.map_err(Error::from)
     }
 }
 
@@ -249,12 +249,12 @@ fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<u8> {
         .stream_mut()
         .control_read()
         .read_exact(&mut code_bytes)
-        .map_err(|e| error::Error::ControlStreamError(e))?;
+        .map_err(|e| Error::ControlStreamError(e))?;
     
     client
         .encoder()
         .decode_response_code(&code_bytes)
-        .map_err(|e| error::Error::EncoderError(e))
+        .map_err(|e| Error::EncoderError(e))
 }
 
 impl<T: FtpClientInternal> FtpClient for T {}

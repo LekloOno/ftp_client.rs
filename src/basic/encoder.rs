@@ -1,5 +1,5 @@
 use crate::encode::{FtpEncoder, Result};
-use crate::encode::error::Error;
+use crate::encode::Error;
 
 pub struct Utf8FtpEncoder;
 

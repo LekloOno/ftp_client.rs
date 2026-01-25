@@ -1,6 +1,6 @@
 use crate::FtpClient;
 
-use crate::error::Error;
+use crate::Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
 

@@ -13,9 +13,9 @@ pub enum Error {
     #[error("Trying to write on data stream, but it is not opened.")]
     WriteUnitializedDataStream,
     #[error("An error occured while encoding data: {0}")]
-    EncoderError(#[from] crate::encode::error::Error),
+    EncoderError(#[from] crate::encode::Error),
     #[error("An error occured while opening a stream: {0}")]
-    StreamError(#[from] crate::stream::error::Error),
+    StreamError(#[from] crate::stream::Error),
     #[error("Response contains an error: {0}")]
     ResponseError(#[from] crate::response::Error)
 }
