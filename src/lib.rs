@@ -100,13 +100,14 @@ pub use private::FtpClientInternal as FtpClientInternal;
 
 /// Describes the exposed interface of an FTP client.
 /// 
+/// It is meant to abstract away any communication with the client in 
+/// an explicit rust-idiomatic API.
+/// 
+/// # Notes
 /// This trait is fully pre-implemented upon the
 /// underlying [`FtpClientInternal`] trait.
 /// A blanket implementation already implements [`FtpClient`]
 /// on any `T` implementing [`FtpClientInternal`].
-/// 
-/// The [`FtpClient`] is meant to abstract away any communication with the client in 
-/// an explicit rust-idiomatic API.
 /// 
 /// It should ideally be used in pair with [`command::FtpCommand`].
 /// Typically, for full explicitness, you wouldn't directly call [`FtpClient::send_command`] 
@@ -134,7 +135,25 @@ pub trait FtpClient: FtpClientInternal {
 
         <Self as FtpClientInternal>::new(hostname, eport)
     }
-
+    /// Sends the provided UTF-8 string command to the host over the control stream.
+    ///  
+    /// # Notes
+    /// Only the pure UTF-8 command content is expected.
+    /// The method handles proper encoding and formating.
+    /// 
+    /// ## Transcoding
+    /// The method is responsible for transcoding the string to the proper format.
+    /// 
+    /// ## Formating
+    /// The method ensures the transmitted command always ends with the proper CRLF.
+    /// 
+    /// # Arguments
+    /// * command - an UTF-8 command to pass over the control stream.
+    /// 
+    /// # Errors
+    /// Common errors accross implementations are -
+    /// - [`error::Error::EncoderError`] if the encoder fails encoding the command, see [`encode::error::Error`].
+    /// - [`error::Error::ControlStreamError`] if an error occured while writing to the control stream, see [`stream::error::Error`].
     fn send_command(&mut self, command: &str) -> Result<()> {
         let encoded = self
             .encoder()
@@ -154,7 +173,15 @@ pub trait FtpClient: FtpClientInternal {
                 .write_all(crlf))
             .map_err(|e| error::Error::ControlStreamError(e))
     }
-
+    /// Sends the content of the bytes buffer over the data stream.  
+    ///
+    /// # Arguments
+    /// * data - a buffer of bytes.
+    /// 
+    /// # Errors
+    /// Common errors accross implementations are -
+    /// - [`error::Error::WriteUnitializedDataStream`] if there is no data stream initialized.
+    /// - [`error::Error::DataStreamError`] if an error occured while writing to the data stream, see [`stream::error::Error`].
     fn send_data(&mut self, data: &[u8]) -> Result<()> {
         self.stream_mut()
             .data_write()
@@ -162,7 +189,29 @@ pub trait FtpClient: FtpClientInternal {
             .write_all(data)
             .map_err(|e| error::Error::DataStreamError(e))
     }
-
+    /// Reads and retrieves a response from the control stream.
+    /// 
+    /// # Notes
+    /// The method extract the underlying [`FtpSuccessRes`] if the response is successfull,
+    /// or propagate the response as an [`error::Error::ResponseError`] if it is either an
+    /// [`response::error::error::FtpErrorRes`] or an [`response::error::failure::FtpFailureRes`]. 
+    /// 
+    /// # Panics
+    /// Multiline responses are not handled yet.
+    /// The method panics if it meets one.
+    /// 
+    /// The method can also panic if no CRLF is found in the control stream.
+    /// This should be safely handled later, especially as the client might just read in the control too soon ?
+    /// 
+    /// # Returns
+    /// The successful response contained next in the control stream.
+    /// 
+    /// # Errors
+    /// Common errors accros implementations are -
+    /// - [`error::Error::ResponseError`] if a response has been successfully read, but contained an error or failure code.
+    ///     see [`response::error::error::FtpErrorRes`] and [`response::error::failure::FtpFailureRes`].
+    /// - [`error::Error::ControlStreamError`] if an error occured while reading the control stream, see [`stream::error::Error`].
+    /// - [`error::Error::IoError`] if an error occured while buffer-reading the control stream, see [`io::error::Error`].
     fn read_response(&mut self) -> Result<FtpSuccessRes> {
         let code = read_response_code(self)?;
 
@@ -197,7 +246,8 @@ fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<u8> {
     client
         .stream_mut()
         .control_read()
-        .read_exact(&mut code_bytes)?;
+        .read_exact(&mut code_bytes)
+        .map_err(|e| error::Error::ControlStreamError(e))?;
     
     client
         .encoder()
