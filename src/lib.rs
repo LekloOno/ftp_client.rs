@@ -6,7 +6,7 @@ pub mod basic;
 pub mod command;
 
 use crate::{
-    response::FtpResponse,
+    response::FtpSuccessRes,
     stream::FtpStream
 };
 
@@ -59,7 +59,7 @@ pub trait FtpClient: private::FtpClientInternal {
             .map_err(|e| error::Error::DataStreamError(e))
     }
 
-    fn read_response(&mut self) -> Result<FtpResponse> {
+    fn read_response(&mut self) -> Result<FtpSuccessRes> {
         let code = read_response_code(self)?;
 
         let hyphen = self.encoder().hyphen();
@@ -78,11 +78,11 @@ pub trait FtpClient: private::FtpClientInternal {
         
         let n_read = finder.find(content).unwrap(); // LAZY UNWRAP
         let body = &content[..n_read + crlf.len()];
-        let response = FtpResponse::new(code, body);
+        let response = response::response_from(code, body);
 
         buf_reader.consume(n_read + crlf.len());
 
-        Ok(response)
+        response.map_err(error::Error::from)
     }
 }
 

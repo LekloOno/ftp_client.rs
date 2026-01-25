@@ -1,20 +1,15 @@
-use std::convert::Infallible;
-use std::str::FromStr;
+pub mod success;
+pub mod error;
 
-pub enum FtpResponse {
-    PLACEHOLDER(Vec<u8>),
-}
+pub use success::FtpSuccessRes;
+pub use error::Error;
 
-impl FtpResponse {
-    pub fn new(_code: u8, body: &[u8]) -> Self {
-        FtpResponse::PLACEHOLDER(body.to_vec())
+pub type FtpResponse = std::result::Result<FtpSuccessRes, Error>;
+
+pub fn response_from(code: u8, body: &[u8]) -> FtpResponse {
+    if code & 200 == 200 {
+        return Ok(FtpSuccessRes::PathNameCreated { pathname: std::str::from_utf8(body).unwrap().to_string() });
     }
-}
 
-impl FromStr for FtpResponse {
-    type Err = Infallible;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(FtpResponse::PLACEHOLDER(s.as_bytes().to_vec()))
-    }
+    Err(error::Error::Error(error::error::FtpErrorRes::Default { res: std::str::from_utf8(body).unwrap().to_string() }))
 }

@@ -15,5 +15,7 @@ pub enum Error {
     #[error("An error occured while encoding data: {0}")]
     EncoderError(#[from] crate::encode::error::Error),
     #[error("An error occured while opening a stream: {0}")]
-    StreamError(#[from] crate::stream::error::Error)
+    StreamError(#[from] crate::stream::error::Error),
+    #[error("Response contains an error: {0}")]
+    ResponseError(#[from] crate::response::Error)
 }
