@@ -41,4 +41,12 @@ pub trait FtpClient: private::FtpClientInternal {
                 .write_all(self.encoder().crlf()))
             .map_err(|e| error::Error::ControlStreamError(e))
     }
+
+    fn send_data(&mut self, data: &[u8]) -> Result<()> {
+        self.stream_mut()
+            .data_write()
+            .ok_or(error::Error::WriteUnitializedDataStream)?
+            .write_all(data)
+            .map_err(|e| error::Error::DataStreamError(e))
+    }
 }
