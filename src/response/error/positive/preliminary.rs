@@ -1,21 +1,18 @@
 use thiserror::Error;
 
-use crate::{FtpResponseCode, response::FtpResponse};
+use crate::response::{
+    FtpResponse,
+    FtpResult,
+    FtpResponseCode,
+    body_string
+};
 
-#[derive(Debug, Error)]
+use ftp_response_derive::FtpResponseEnum;
+use ftp_result_derive::ftp_result;
+
+#[derive(Debug, Error, FtpResponseEnum)]
+#[ftp_result(true)]
 pub enum FtpPreliminaryReply {
-
-}
-
-impl From<FtpPreliminaryReply> for crate::response::FtpResult {
-    fn from(v: FtpPreliminaryReply) -> Self {
-        Self::Err(v.into())
-    }
-}
-
-impl FtpResponse for FtpPreliminaryReply {
-    #[allow(unused)]
-    fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized {
-        None
-    }
+    #[response_code(999)]
+    UNDEFINED {msg: String},
 }

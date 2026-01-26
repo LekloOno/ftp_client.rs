@@ -6,8 +6,28 @@ version = 4
 name = "ftp_client"
 version = "0.1.0"
 dependencies = [
+ "ftp_response_derive",
+ "ftp_result_derive",
  "memchr",
  "thiserror",
+]
+
+[[package]]
+name = "ftp_response_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "ftp_result_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

@@ -6,3 +6,5 @@ edition = "2024"
 [dependencies]
 memchr = "2.7.6"
 thiserror = "2.0.18"
+ftp_response_derive = { path = "./ftp_response_derive" }
+ftp_result_derive = { path = "./ftp_result_derive" }

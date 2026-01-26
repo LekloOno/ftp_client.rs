@@ -1,38 +1,20 @@
-use crate::{FtpResponseCode, response::FtpResponse};
-use crate::response::body_string;
+use crate::response::{
+    FtpResponse,
+    FtpResult,
+    FtpResponseCode,
+    body_string
+};
 
-#[derive(Debug)]
+use ftp_response_derive::FtpResponseEnum;
+use ftp_result_derive::ftp_result;
+
+#[derive(Debug, FtpResponseEnum)]
+#[ftp_result(false)]
 pub enum FtpSuccessRes {
+    #[response_code(220)]
     ServiceReady { msg: String },
+    #[response_code(230)]
     UserLoggedInProceed {msg: String},
-    PathNameCreated {pathname: String},
-}
-
-impl From<FtpSuccessRes> for super::FtpResult {
-    fn from(v: FtpSuccessRes) -> Self {
-        Self::Ok(v)
-    }
-}
-
-impl FtpResponse for FtpSuccessRes {
-    /// # Panics
-    /// The parsing may panic if the body can't be parsed to valid utf8.
-    fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized {
-        match code.into() {
-            257 => Some(Self::PathNameCreated { pathname: body_string(body) }),
-            230 => Some(Self::UserLoggedInProceed { msg: body_string(body) }),
-            220 => Some(Self::ServiceReady { msg: body_string(body) }),
-            _ => None
-        }
-    }
-}
-
-impl std::fmt::Display for FtpSuccessRes {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            FtpSuccessRes::PathNameCreated { pathname } => write!(f, "257 PathNameCreated: {pathname}"),
-            FtpSuccessRes::ServiceReady { msg } => write!(f, "220 ServiceReady: {msg}"),
-            FtpSuccessRes::UserLoggedInProceed { msg } => write!(f, "230 UserLoggedInProceed: {msg}"),
-        }
-    }
+    #[response_code(257)]
+    PathNameCreated {msg: String},
 }

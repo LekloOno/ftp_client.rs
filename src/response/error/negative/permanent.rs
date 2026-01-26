@@ -1,25 +1,18 @@
 use thiserror::Error;
 
-use crate::{FtpResponseCode, response::{FtpResponse, body_string}};
+use crate::response::{
+    FtpResponse,
+    FtpResult,
+    FtpResponseCode,
+    body_string
+};
 
-#[derive(Debug, Error)]
+use ftp_response_derive::FtpResponseEnum;
+use ftp_result_derive::ftp_result;
+
+#[derive(Debug, Error, FtpResponseEnum)]
+#[ftp_result(true)]
 pub enum FtpPermanentError {
-    #[error("530 NotLoggedIn : {res}")]
+    #[response_code(530)]
     NotLoggedIn {res: String},
-}
-
-impl From<FtpPermanentError> for crate::response::FtpResult {
-    fn from(v: FtpPermanentError) -> Self {
-        Self::Err(v.into())
-    }
-}
-
-impl FtpResponse for FtpPermanentError {
-    #[allow(unused)]
-    fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized {
-        match code.into() {
-            530 => Some(Self::NotLoggedIn { res: body_string(body) }),
-            _ => None,
-        }
-    }
 }
