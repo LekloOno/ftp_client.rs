@@ -1,6 +1,12 @@
 #[derive(Debug, Clone)]
 pub struct FtpResponseCode(u16);
 
+/// Wraps an FtpResponseCode under a bytes-packed structure
+/// with an explicit interface.
+/// 
+/// # Notes
+/// We could eventually make FtpResponseCode restricted to lifetime `'a`
+/// of the bytes it is built from. To do later.
 impl FtpResponseCode {
     /// Builds an FtpResponseCode from a raw bytes buffer.
     ///
@@ -21,14 +27,28 @@ impl FtpResponseCode {
         Self(sh_outcome | sh_kind | sh_details)
     }
 
+    /// The first digit (`x`) of the response code `Xyz`:  <br/>
+    /// <br/>
+    /// `2`         - Success <br/>
+    /// `1` or `3`  - Error or Incomplete <br/>
+    /// `4` or `5`  - Failure <br/>
     pub fn outcome(&self) -> u8 {
         ((self.0 >> 8) & 0xf) as u8
     }
 
+    /// The second digit (`y`) of the response code `xYz`: <br/>
+    /// <br/>
+    /// `0` - Syntax <br/>
+    /// `1` - Information <br/>
+    /// `2` - Connections <br/>
+    /// `3` - Authentication <br/>
+    /// `4` - Not defined <br/>
+    /// `5` - File system <br/> 
     pub fn kind(&self) -> u8 {
         ((self.0 >> 4) & 0xf) as u8
     }
 
+    /// The third digit (`z`) of the response code `xyZ`.
     pub fn details(&self) -> u8 {
         (self.0 as u8) & 0xf
     }
