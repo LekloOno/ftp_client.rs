@@ -66,14 +66,14 @@ pub fn ftp_response_enum_derive(input: TokenStream) -> TokenStream {
 
             match variant.fields {
                 Fields::Named(fields_named) => {
-                    let field_names: Vec<_> = fields_named.named.iter().map(|f| &f.ident).collect();
+                    let field = &fields_named.named.get(0).unwrap().ident;
 
                     from_bytes_arms.push(quote! {
-                        #code => Some(Self::#var_name { #(#field_names: body_string(body)),* }),
+                        #code => Some(Self::#var_name { #field: body_string(body) }),
                     });
 
                     display_arms.push(quote! {
-                        Self::#var_name { #(#field_names),* } => write!(f, "{} {}: {}", #code, stringify!(#var_name), #(#field_names),*),
+                        Self::#var_name { #field } => write!(f, "{} {}: {}", #code, stringify!(#var_name), #field),
                     });
                 }
                 _ => panic!("Variant {} must have named fields", var_name),
