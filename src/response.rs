@@ -6,8 +6,8 @@ pub use code::FtpResponseCode;
 pub use success::FtpSuccessRes;
 pub use error::{
     Error,
-    error::FtpErrorRes,
-    failure::FtpFailureRes,
+    FtpErrorRes,
+    FtpFailureRes,
 };
 
 /// # Implementation Details
@@ -54,4 +54,8 @@ pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
 
     Err(Error::from_bytes(code, body)
         .unwrap_or(Error::UnknownCode { code: code.clone() }))
+}
+
+fn body_string(body: &[u8]) -> String {
+    std::str::from_utf8(body).unwrap().to_string()
 }

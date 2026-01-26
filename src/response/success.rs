@@ -1,4 +1,5 @@
 use crate::{FtpResponseCode, response::FtpResponse};
+use crate::response::body_string;
 
 #[derive(Debug)]
 pub enum FtpSuccessRes {
@@ -22,10 +23,6 @@ impl FtpResponse for FtpSuccessRes {
             _ => None
         }
     }
-}
-
-fn body_string(body: &[u8]) -> String {
-    std::str::from_utf8(body).unwrap().to_string()
 }
 
 impl std::fmt::Display for FtpSuccessRes {
