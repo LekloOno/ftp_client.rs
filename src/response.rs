@@ -58,9 +58,13 @@ pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
         .unwrap_or(Error::UnknownCode { code: code.clone() }))
 }
 
-pub fn can_continue(result: FtpResult) -> crate::Result<()> {
-    let Err(err_res) = &result else {
+pub fn can_continue(result: crate::Result<FtpSuccessRes>) -> crate::Result<()> {
+    let Err(error) = &result else {
         return Ok(());
+    };
+
+    let crate::Error::ResponseError(err_res) = error else {
+        return result.map(|_| ());
     };
 
     match err_res {
