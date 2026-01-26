@@ -50,6 +50,9 @@ mod private {
     /// > This might not require to be dynamically interchangeable, and we could argue this could be generically-typed 
     /// instead of dynamically dispatched. To argue.
     pub trait FtpClientInternal {
+        /// A helper to quickly setup a base pasv data connection. <br/>
+        /// It should open the data read stream.
+        fn open_pasv_data(&mut self) -> super::Result<()>;
         /// Retrieves the current immutable FTP stream of the client.
         /// 
         /// # Notes
@@ -329,6 +332,11 @@ pub trait FtpClient: FtpClientInternal {
     /// See [`stream::Error`].
     fn open_data_write(&mut self, hostname: &str, port: &str) -> Result<()> {
         self.stream_mut().open_data_write(hostname, port).map_err(Error::from)
+    }
+
+    /// A helper to quickly setup a base pasv data connection. <br/>
+    fn open_pasv_data(&mut self) -> Result<()> {
+        FtpClientInternal::open_pasv_data(self)
     }
 }
 
