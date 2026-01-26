@@ -48,8 +48,10 @@ pub trait FtpResponse {
 
 pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
     if code.outcome() == 2 {
-        return FtpSuccessRes::from_bytes(code, body).ok_or(Error::UnknownCode { code: code.clone() });
+        return FtpSuccessRes::from_bytes(code, body)
+            .ok_or(Error::UnknownCode { code: code.clone() });
     }
 
-    Err(Error::Error(FtpErrorRes::Default { res: std::str::from_utf8(body).unwrap().to_string() }))
+    Err(Error::from_bytes(code, body)
+        .unwrap_or(Error::UnknownCode { code: code.clone() }))
 }

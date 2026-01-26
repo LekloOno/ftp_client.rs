@@ -22,10 +22,11 @@ impl FtpEncoder for Utf8FtpEncoder {
     }
     
     fn decode_response_code(&self, bytes: &[u8]) -> Result<FtpResponseCode> {
-        let sized_bytes: &[u8; 3] = bytes
-            .try_into()
-            .map_err(|_| Error::DecodingError)?;
+        let sized_bytes = 
+            TryInto::<&[u8; 3]>::try_into(bytes)
+            .map_err(|_| Error::DecodingError)?
+            .map(|u| u - b'0');
 
-        Ok(FtpResponseCode::from_bytes(sized_bytes))
+        Ok(FtpResponseCode::from_bytes(&sized_bytes))
     }
 }
