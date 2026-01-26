@@ -1,27 +1,35 @@
 use crate::command::FtpCommand;
 
 pub enum FtpBaseCommands {
-    User,
-    Pass,
+    User { username: String },
+    Pass { password: String },
     Pasv,
-    Cwd,
+    Cwd { pathname: String },
     Pwd,
     Cdup,
-    List,
+    List {pathname: Option<String> },
     Quit,
 }
 
-impl FtpCommand for FtpBaseCommands {
-    fn as_str(&self) -> &str {
+impl ToString for FtpBaseCommands {
+    fn to_string(&self) -> String {
         match self {
-            FtpBaseCommands::User => todo!(),
-            FtpBaseCommands::Pass => todo!(),
-            FtpBaseCommands::Pasv => todo!(),
-            FtpBaseCommands::Cwd => todo!(),
-            FtpBaseCommands::Pwd => "PWD",
-            FtpBaseCommands::Cdup => todo!(),
-            FtpBaseCommands::List => todo!(),
-            FtpBaseCommands::Quit => todo!(),
+            FtpBaseCommands::User {username} => format!("USER {username}"),
+            FtpBaseCommands::Pass {password}=> format!("PASS {password}"),
+            FtpBaseCommands::Pasv => format!("PASV"),
+            FtpBaseCommands::Cwd {pathname}=> format!("CWD {pathname}"),
+            FtpBaseCommands::Pwd => format!("PWD"),
+            FtpBaseCommands::Cdup => format!("CDUP"),
+            FtpBaseCommands::List {pathname} =>
+                format!("LIST{}", pathname
+                    .as_ref()
+                    .map_or(
+                        "".to_string(),
+                        |s| format!(" {}", s))
+                ),
+            FtpBaseCommands::Quit => format!("QUIT"),
         }
     }
 }
+
+impl FtpCommand for FtpBaseCommands {}
