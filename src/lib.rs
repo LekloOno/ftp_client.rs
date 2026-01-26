@@ -240,6 +240,33 @@ pub trait FtpClient: FtpClientInternal {
 
         response.map_err(Error::from)
     }
+
+    fn data_stream(&mut self) -> Result<&mut dyn std::io::Read> {
+        self.stream_mut()
+            .data_read()
+            .ok_or(Error::WriteUnitializedDataStream)
+    }
+
+    fn read_data(&mut self, buff: &mut [u8]) -> Result<usize> {
+        self.stream_mut()
+            .data_read()
+            .ok_or(Error::WriteUnitializedDataStream)?
+            .read(buff)
+            .map_err(|e| Error::DataStreamError(e))
+    }
+
+    fn read_data_to_end(&mut self, buff: &mut Vec<u8>) -> Result<()> {
+        self.stream_mut()
+            .data_read()
+            .ok_or(Error::WriteUnitializedDataStream)?
+            .read_to_end(buff)
+            .map_err(|e| Error::DataStreamError(e))
+            .map(|_| ())
+    }
+
+    fn open_data(&mut self, hostname: &str, port: &str) -> Result<()> {
+        self.stream_mut().open_data(hostname, port).map_err(Error::from)
+    }
 }
 
 fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<FtpResponseCode> {

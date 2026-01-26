@@ -13,6 +13,6 @@ use ftp_result_derive::ftp_result;
 #[derive(Debug, Error, FtpResponseEnum)]
 #[ftp_result(true)]
 pub enum FtpPreliminaryReply {
-    #[response_code(999)]
-    UNDEFINED {msg: String},
+    #[response_code(150)]
+    FileStatusOkay {msg: String},
 }
