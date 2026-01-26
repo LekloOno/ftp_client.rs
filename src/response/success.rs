@@ -1,7 +1,9 @@
 use crate::{FtpResponseCode, response::FtpResponse};
 
+#[derive(Debug)]
 pub enum FtpSuccessRes {
-    PathNameCreated {pathname: String}
+    PathNameCreated {pathname: String},
+    ServiceReady { msg: String }
 }
 
 impl From<FtpSuccessRes> for super::FtpResult {
@@ -16,6 +18,7 @@ impl FtpResponse for FtpSuccessRes {
     fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized {
         match code.into() {
             257 => Some(Self::PathNameCreated { pathname: body_string(body) }),
+            220 => Some(Self::ServiceReady { msg: body_string(body) }),
             _ => None
         }
     }
@@ -28,7 +31,8 @@ fn body_string(body: &[u8]) -> String {
 impl std::fmt::Display for FtpSuccessRes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            FtpSuccessRes::PathNameCreated { pathname } => write!(f, "{pathname}"),
+            FtpSuccessRes::PathNameCreated { pathname } => write!(f, "257 PathNameCreated: {pathname}"),
+            FtpSuccessRes::ServiceReady { msg } => write!(f, "220 ServiceReady: {msg}"),
         }
     }
 }
