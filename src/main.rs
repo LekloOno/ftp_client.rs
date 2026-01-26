@@ -1,4 +1,6 @@
-use ftp_client::{FtpClient, basic::{client::TcpFtpClient, command::FtpBaseCommands}, command::FtpCommand};
+use ftp_client::{FtpClient, basic::{client::TcpFtpClient, command::FtpBaseCommands}};
+
+pub mod log;
 
 pub fn main() -> ftp_client::Result<()> {
     let args: Vec<String> = std::env::args().collect();
@@ -17,14 +19,9 @@ pub fn main() -> ftp_client::Result<()> {
     
     println!("{ok_res}");
 
+    log::send_command(&FtpBaseCommands::User { username: "anonymous".to_string() }, &mut client);
+    log::send_command(&FtpBaseCommands::Pass { password: "pswd".to_string() }, &mut client);
+    log::send_command(&FtpBaseCommands::Pwd, &mut client);
     
-    FtpBaseCommands::Pwd.send(&mut client)?;
-    println!("pwd command sent !");
-    let res = client.read_response();
-
-    match res {
-        Ok(ok_res) => println!("{ok_res}"),
-        Err(err_res) => println!("{err_res}"),
-    };
     Ok(())
 }
