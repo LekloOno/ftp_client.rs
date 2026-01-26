@@ -8,11 +8,45 @@ pub use error::{
     failure::FtpFailureRes,
 };
 
-pub type FtpResponse = std::result::Result<FtpSuccessRes, Error>;
+/// # Implementation Details
+/// The [`FtpResult`] type alias is willingly not called `Result` as other result aliases
+/// in this crate, as this reslut has a slightly more intricated meaning.
+/// 
+/// It translates the semantic of FTP responses into a rust result semantic.
+/// That is, receiving a response could be perceived a normal, non-faulty behavior.
+/// We could thus simply always return the Ftp Response as an `Ok()` value.
+/// 
+/// But instead, we encapsulate FTP success response codes as `Ok`,
+/// and error/failure as an `Err`, for more rust-idiomacy.
+/// 
+/// # Errors
+/// The Error type can either represent a conventionnal valid Ftp Error
+/// - [`Error::Error`] - 1yz or 3yz codes: Error or incomplete reply.
+/// - [`Error::Failure`] - 4yz or 5yz codes: Failure reply.
+/// Or a parsing error
+/// - [`Error::UnknownCode`] - The xyz FTP response code is not supported.
+pub type FtpResult = std::result::Result<FtpSuccessRes, Error>;
 
-pub fn response_from(code: u8, body: &[u8]) -> FtpResponse {
+/// A helper trait to build FTP responses.
+pub trait FtpResponse {
+    /// Builds an FTP response instance the xyz response code.
+    /// 
+    /// # Implementation details
+    /// For success responses, the first code digit (`2`) is filtered by the FtpResponse manager (currently, [`response_from`]).
+    /// It's thus only necessary to match on the two last `2yz` digits, composing the kind and kind-details of the response. 
+    /// 
+    /// # Arguments
+    /// * code - The response code, of type xyz.
+    /// * body - The response body, might be empty. 
+    ///
+    /// # Returns
+    /// None if the code is associated to no existing response under the target response category.
+    fn from_bytes(code: u8, body: &[u8]) -> Option<Self> where Self: Sized;
+}
+
+pub fn response_from(code: u8, body: &[u8]) -> FtpResult {
     if code & 200 == 200 {
-        return Ok(FtpSuccessRes::PathNameCreated { pathname: std::str::from_utf8(body).unwrap().to_string() });
+        return FtpSuccessRes::from_bytes(code, body).ok_or(Error::UnknownCode { code });
     }
 
     Err(Error::Error(FtpErrorRes::Default { res: std::str::from_utf8(body).unwrap().to_string() }))

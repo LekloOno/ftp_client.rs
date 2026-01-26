@@ -1,11 +1,28 @@
+use crate::response::FtpResponse;
+
 pub enum FtpSuccessRes {
     PathNameCreated {pathname: String}
 }
 
-impl From<FtpSuccessRes> for super::FtpResponse {
+impl From<FtpSuccessRes> for super::FtpResult {
     fn from(v: FtpSuccessRes) -> Self {
         Self::Ok(v)
     }
+}
+
+impl FtpResponse for FtpSuccessRes {
+    /// # Panics
+    /// The parsing may panic if the body can't be parsed to valid utf8.
+    fn from_bytes(code: u8, body: &[u8]) -> Option<Self> where Self: Sized {
+        match code {
+            57 => Some(Self::PathNameCreated { pathname: body_string(body) }),
+            _ => None
+        }
+    }
+}
+
+fn body_string(body: &[u8]) -> String {
+    std::str::from_utf8(body).unwrap().to_string()
 }
 
 impl std::fmt::Display for FtpSuccessRes {
