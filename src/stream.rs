@@ -12,5 +12,6 @@ pub trait FtpStream {
     fn control_read(&mut self) -> &mut dyn std::io::Read;
     fn control_write(&mut self) -> &mut dyn std::io::Write;
 
-    fn open_data(&mut self, hostname: &str, port: &str) -> Result<()>;
+    fn open_data_read(&mut self, hostname: &str, port: &str) -> Result<()>;
+    fn open_data_write(&mut self, hostname: &str, port: &str) -> Result<()>;
 }

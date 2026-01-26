@@ -184,7 +184,7 @@ pub trait FtpClient: FtpClientInternal {
     /// 
     /// # Errors
     /// Common errors accross implementations are -
-    /// - [`Error::WriteUnitializedDataStream`] if there is no data stream initialized.
+    /// - [`Error::WriteUnitializedDataStream`] if there is no data write stream initialized.
     /// - [`Error::DataStreamError`] if an error occured while writing to the data stream, see [`stream::Error`].
     fn send_data(&mut self, data: &[u8]) -> Result<()> {
         self.stream_mut()
@@ -242,31 +242,86 @@ pub trait FtpClient: FtpClientInternal {
         response.map_err(Error::from)
     }
 
-    fn data_stream(&mut self) -> Result<&mut dyn std::io::Read> {
+    /// Retrieves the data read stream. <br/>
+    /// This can typically be used to pipe the stream into a Write stream for fast data polling.
+    /// 
+    /// # Errors
+    /// Common errors accros implementations are -
+    /// - [`Error::ReadUnitializedDataStream`] if there is no data read stream initialized.
+    fn data_read_stream(&mut self) -> Result<&mut dyn std::io::Read> {
         self.stream_mut()
             .data_read()
-            .ok_or(Error::WriteUnitializedDataStream)
+            .ok_or(Error::ReadUnitializedDataStream)
     }
-
+    
+    /// Reads the data stream into the provided buffer.
+    ///
+    /// # Arguments
+    /// * buff - a bytes buffer to read data in.
+    ///
+    /// # Returns
+    /// The number of bytes read.
+    /// 
+    /// # Errors
+    /// Common errors accros implementations are -
+    /// - [`Error::ReadUnitializedDataStream`] if there is no data read stream initialized.
+    /// - [`Error::DataStreamError`] if an error occured while writing to the data stream, see [`stream::Error`].
     fn read_data(&mut self, buff: &mut [u8]) -> Result<usize> {
         self.stream_mut()
             .data_read()
-            .ok_or(Error::WriteUnitializedDataStream)?
+            .ok_or(Error::ReadUnitializedDataStream)?
             .read(buff)
             .map_err(|e| Error::DataStreamError(e))
     }
 
+    /// Reads the data stream into the provided `Vec<u8>` buffer until an `EOF` is met.
+    ///
+    /// # Arguments
+    /// * buff - a dynamically sized bytes buffer.
+    ///
+    /// # Errors
+    /// Common errors accros implementations are -
+    /// - [`Error::ReadUnitializedDataStream`] if there is no data read stream initialized.
+    /// - [`Error::DataStreamError`] if an error occured while writing to the data stream, see [`stream::Error`].
     fn read_data_to_end(&mut self, buff: &mut Vec<u8>) -> Result<()> {
         self.stream_mut()
             .data_read()
-            .ok_or(Error::WriteUnitializedDataStream)?
+            .ok_or(Error::ReadUnitializedDataStream)?
             .read_to_end(buff)
             .map_err(|e| Error::DataStreamError(e))
             .map(|_| ())
     }
 
-    fn open_data(&mut self, hostname: &str, port: &str) -> Result<()> {
-        self.stream_mut().open_data(hostname, port).map_err(Error::from)
+    /// Opens a data read stream.
+    ///
+    /// # Arguments
+    /// * hostname  - The hostname of the FTP host, which can be a plain-text IP. 
+    /// * port      - The port of the data read stream.
+    ///
+    /// # Notes
+    /// Opening a data read stream as one is already opened is unspecified behavior. <br/>
+    /// It might fail, close the existing one, or anything else. It is up to the stream implementation.
+    /// 
+    /// # Errors
+    /// See [`stream::Error`].
+    fn open_data_read(&mut self, hostname: &str, port: &str) -> Result<()> {
+        self.stream_mut().open_data_read(hostname, port).map_err(Error::from)
+    }
+
+    /// Opens a data write stream.
+    ///
+    /// # Arguments
+    /// * hostname  - The hostname of the FTP host, which can be a plain-text IP. 
+    /// * port      - The port of the data write stream.
+    ///
+    /// # Notes
+    /// Opening a data write stream as one is already opened is unspecified behavior. <br/>
+    /// It might fail, close the existing one, or anything else. It is up to the stream implementation.
+    /// 
+    /// # Errors
+    /// See [`stream::Error`].
+    fn open_data_write(&mut self, hostname: &str, port: &str) -> Result<()> {
+        self.stream_mut().open_data_write(hostname, port).map_err(Error::from)
     }
 }
 

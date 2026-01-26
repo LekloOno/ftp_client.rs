@@ -44,11 +44,11 @@ pub fn main() -> ftp_client::Result<()> {
 
     println!("{}:{}", ip, port);
 
-    client.open_data(&hostname, &port.to_string()).expect("Error while opening data port.");
+    client.open_data_read(&hostname, &port.to_string()).expect("Error while opening data port.");
 
     log::send_command(&FtpBaseCommands::List { pathname: None }, &mut client);
 
-    std::io::copy(client.data_stream().unwrap(), &mut std::io::stdout())?;
+    std::io::copy(client.data_read_stream().unwrap(), &mut std::io::stdout())?;
 
     println!("Completed");
     

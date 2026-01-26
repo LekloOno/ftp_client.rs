@@ -35,12 +35,16 @@ impl FtpStream for TcpFtpStream {
         &mut self.control
     }
     
-    fn open_data(&mut self, hostname: &str, port: &str) -> Result<()> {
+    fn open_data_read(&mut self, hostname: &str, port: &str) -> Result<()> {
         let data_stream = TcpStream::connect(format!("{hostname}:{port}"))
             .map_err(|e| Error::DataConnectionError(Box::new(e)))?;
         
         self.data = Some(data_stream);
 
         Ok(())
+    }
+
+    fn open_data_write(&mut self, hostname: &str, port: &str) -> Result<()> {
+        self.open_data_read(hostname, port)
     }
 }
