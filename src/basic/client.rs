@@ -32,7 +32,7 @@ impl FtpClientInternal for TcpFtpClient {
         let res = FtpClient::read_response(self)?;
 
         let crate::FtpSuccessRes::EnteringPassiveMode {msg} = res else {
-            panic!("Unexpected response");
+            panic!("Unexpected response {res}");
         };
 
         let (ip, port) = crate::response::success::parse_pasv_reply(&msg).expect("msg");
