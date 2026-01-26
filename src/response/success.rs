@@ -17,6 +17,10 @@ pub enum FtpSuccessRes {
     UserLoggedInProceed {msg: String},
     #[response_code(257)]
     PathNameCreated {msg: String},
+    #[response_code(226)]
+    ClosingDataConnection {msg: String},
+    #[response_code(250)]
+    RequestedFileActionCompleted {msg: String},
     #[response_code(227)]
     EnteringPassiveMode {msg: String},
 }
