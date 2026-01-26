@@ -29,9 +29,11 @@ impl FtpResponseCode {
 
     /// The first digit (`x`) of the response code `Xyz`:  <br/>
     /// <br/>
-    /// `2`         - Success <br/>
-    /// `1` or `3`  - Error or Incomplete <br/>
-    /// `4` or `5`  - Failure <br/>
+    /// `1` - Positive Preliminary reply <br/>
+    /// `2` - Positive Completion reply <br/>
+    /// `3` - Positive Intermediate reply <br/>
+    /// `4` - Transient Negative Completion reply <br/>
+    /// `5` - Permanent Negative Completion reply <br/>
     pub fn outcome(&self) -> u8 {
         ((self.0 >> 8) & 0xf) as u8
     }

@@ -6,8 +6,10 @@ pub use code::FtpResponseCode;
 pub use success::FtpSuccessRes;
 pub use error::{
     Error,
-    FtpErrorRes,
-    FtpFailureRes,
+    FtpPreliminaryReply,
+    FtpIntermediateReply,
+    FtpTransientError,
+    FtpPermanentError,
 };
 
 /// # Implementation Details
