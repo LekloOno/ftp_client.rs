@@ -1,6 +1,9 @@
-use ftp_client::{FtpClient, basic::{client::TcpFtpClient, command::FtpBaseCommands}, response::success};
-
-pub mod log;
+use ftp_client::{
+    FtpClient,
+    log,
+    basic::{client::TcpFtpClient, command::FtpBaseCommands},
+    response::success
+};
 
 pub fn main() -> ftp_client::Result<()> {
     let args: Vec<String> = std::env::args().collect();

@@ -1,4 +1,4 @@
-use ftp_client::{FtpClient, command::FtpCommand};
+use crate::{FtpClient, command::FtpCommand};
 
 pub fn send_command(command: &dyn FtpCommand, client: &mut dyn FtpClient) {
     match command.send(client) {

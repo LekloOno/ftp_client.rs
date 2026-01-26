@@ -4,6 +4,7 @@ pub mod encode;
 pub mod error;
 pub mod basic;
 pub mod command;
+pub mod log;
 
 pub use crate::{
     response::FtpSuccessRes,
