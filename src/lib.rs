@@ -52,7 +52,7 @@ mod private {
     pub trait FtpClientInternal {
         /// A helper to quickly setup a base pasv data connection. <br/>
         /// It should open the data read stream.
-        fn open_pasv_data(&mut self) -> super::Result<()>;
+        fn open_pasv_data_internal(&mut self) -> super::Result<()>;
         /// Retrieves the current immutable FTP stream of the client.
         /// 
         /// # Notes
@@ -336,7 +336,7 @@ pub trait FtpClient: FtpClientInternal {
 
     /// A helper to quickly setup a base pasv data connection. <br/>
     fn open_pasv_data(&mut self) -> Result<()> {
-        FtpClientInternal::open_pasv_data(self)
+        self.open_pasv_data_internal()
     }
 }
 

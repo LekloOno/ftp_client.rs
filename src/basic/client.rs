@@ -27,7 +27,7 @@ impl FtpClientInternal for TcpFtpClient {
         })
     }
     
-    fn open_pasv_data(&mut self) -> crate::Result<()> {
+    fn open_pasv_data_internal(&mut self) -> crate::Result<()> {
         let _ = &FtpBaseCommands::Pasv.send(self)?;
         let res = FtpClient::read_response(self)?;
 
