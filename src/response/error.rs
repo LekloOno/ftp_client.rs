@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::response::FtpResponse;
+use crate::{FtpResponseCode, response::FtpResponse};
 
 pub mod error;
 pub mod failure;
@@ -12,12 +12,12 @@ pub enum Error {
     #[error("Error: {0}")]
     Error(#[from] error::FtpErrorRes),
     #[error("Response code unknown: {code}")]
-    UnknownCode{ code: u8 },
+    UnknownCode{ code: FtpResponseCode },
 }
 
 impl FtpResponse for Error {
     #[allow(unused)]
-    fn from_bytes(code: u8, body: &[u8]) -> Option<Self> where Self: Sized {
+    fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized {
         None
     }
 }

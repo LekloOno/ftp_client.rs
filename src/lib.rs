@@ -7,6 +7,7 @@ pub mod command;
 
 pub use crate::{
     response::FtpSuccessRes,
+    response::FtpResponseCode,
     stream::FtpStream,
     encode::FtpEncoder,
     error::Error,
@@ -233,7 +234,7 @@ pub trait FtpClient: FtpClientInternal {
         
         let n_read = finder.find(content).unwrap(); // LAZY UNWRAP
         let body = &content[..n_read + crlf.len()];
-        let response = response::response_from(code, body);
+        let response = response::response_from(&code, body);
 
         buf_reader.consume(n_read + crlf.len());
 
@@ -241,7 +242,7 @@ pub trait FtpClient: FtpClientInternal {
     }
 }
 
-fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<u8> {
+fn read_response_code<T: FtpClient + ?Sized>(client: &mut T) -> Result<FtpResponseCode> {
     let code_len = client.encoder().response_code_len();
     let mut code_bytes = vec![0u8; code_len];
         

@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::response::FtpResponse;
+use crate::{FtpResponseCode, response::FtpResponse};
 
 #[derive(Error, Debug)]
 pub enum FtpErrorRes {
@@ -16,7 +16,7 @@ impl From<FtpErrorRes> for crate::response::FtpResult {
 
 impl FtpResponse for FtpErrorRes {
     #[allow(unused)]
-    fn from_bytes(code: u8, body: &[u8]) -> Option<Self> where Self: Sized {
+    fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized {
         match code {
             _ => None,
         }

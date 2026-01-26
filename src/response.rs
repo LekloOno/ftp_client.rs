@@ -1,6 +1,8 @@
+pub mod code;
 pub mod success;
 pub mod error;
 
+pub use code::FtpResponseCode;
 pub use success::FtpSuccessRes;
 pub use error::{
     Error,
@@ -41,12 +43,12 @@ pub trait FtpResponse {
     ///
     /// # Returns
     /// None if the code is associated to no existing response under the target response category.
-    fn from_bytes(code: u8, body: &[u8]) -> Option<Self> where Self: Sized;
+    fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized;
 }
 
-pub fn response_from(code: u8, body: &[u8]) -> FtpResult {
-    if code & 200 == 200 {
-        return FtpSuccessRes::from_bytes(code, body).ok_or(Error::UnknownCode { code });
+pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
+    if code.outcome() == 2 {
+        return FtpSuccessRes::from_bytes(code, body).ok_or(Error::UnknownCode { code: code.clone() });
     }
 
     Err(Error::Error(FtpErrorRes::Default { res: std::str::from_utf8(body).unwrap().to_string() }))

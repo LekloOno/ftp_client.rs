@@ -1,6 +1,9 @@
 pub mod error;
 
 pub use error::Error;
+
+use crate::response::FtpResponseCode;
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub trait FtpEncoder {
@@ -12,5 +15,5 @@ pub trait FtpEncoder {
     fn hyphen(&self) -> &'static [u8];
     
     fn response_code_len(&self) -> usize;
-    fn decode_response_code(&self, bytes: &[u8]) -> Result<u8>;
+    fn decode_response_code(&self, bytes: &[u8]) -> Result<FtpResponseCode>;
 }

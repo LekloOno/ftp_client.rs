@@ -1,3 +1,4 @@
+use crate::FtpResponseCode;
 use crate::encode::{FtpEncoder, Result};
 use crate::encode::Error;
 
@@ -20,16 +21,11 @@ impl FtpEncoder for Utf8FtpEncoder {
         3
     }
     
-    fn decode_response_code(&self, bytes: &[u8]) -> Result<u8> {
-        if bytes.len() != 3 {
-            return Err(Error::DecodingError);
-        }
-        
-        let mut value = 0;
-        for d in bytes {
-            value = value * 10 + (d - b'0');
-        }
+    fn decode_response_code(&self, bytes: &[u8]) -> Result<FtpResponseCode> {
+        let sized_bytes: &[u8; 3] = bytes
+            .try_into()
+            .map_err(|_| Error::DecodingError)?;
 
-        Ok(value)
+        Ok(FtpResponseCode::from_bytes(sized_bytes))
     }
 }
