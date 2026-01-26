@@ -177,6 +177,13 @@ pub trait FtpClient: FtpClientInternal {
                 .write_all(crlf))
             .map_err(|e| Error::ControlStreamError(e))
     }
+
+    /// Sends the command and waits for the server's response.
+    /// See [`FtpClient::send_command`] and [`FtpClient::read_response`].
+    fn send_command_and_listen(&mut self, command: &str) -> Result<FtpSuccessRes> {
+        self.send_command(command)?;
+        self.read_response()
+    }
     /// Sends the content of the bytes buffer over the data stream.  
     ///
     /// # Arguments

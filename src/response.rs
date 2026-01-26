@@ -58,6 +58,17 @@ pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
         .unwrap_or(Error::UnknownCode { code: code.clone() }))
 }
 
+pub fn can_continue(result: FtpResult) -> crate::Result<()> {
+    let Err(err_res) = &result else {
+        return Ok(());
+    };
+
+    match err_res {
+        Error::PreliminaryReply(_) => Ok(()),
+        _ => result.map(|_| ()).map_err(crate::Error::from),
+    }
+}
+
 fn body_string(body: &[u8]) -> String {
     std::str::from_utf8(body).unwrap().to_string()
 }
