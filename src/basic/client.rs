@@ -59,10 +59,10 @@ impl FtpClientInternal for TcpFtpClient {
     }
     
     fn authenticate_internal(&mut self) -> crate::Result<()> {
-        crate::log::send_and_read(&FtpBaseCommands::User { username: "anonymous".to_string() }, self);
-        crate::log::send_and_read(&FtpBaseCommands::Pass { password: "pswd".to_string() }, self);
-        //FtpBaseCommands::User { username: "anonymous".to_string() }.send_and_res(self)?;
-        //FtpBaseCommands::Pass { password: "pswd".to_string() }.send_and_res(self)?;
+        //crate::log::send_and_read(&FtpBaseCommands::User { username: "anonymous".to_string() }, self);
+        //crate::log::send_and_read(&FtpBaseCommands::Pass { password: "pswd".to_string() }, self);
+        FtpBaseCommands::User { username: "anonymous".to_string() }.send_and_res(self)?;
+        FtpBaseCommands::Pass { password: "pswd".to_string() }.send_and_res(self)?;
         Ok(())
     }
 }
