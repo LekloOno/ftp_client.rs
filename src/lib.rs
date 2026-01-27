@@ -87,7 +87,17 @@ mod private {
         /// # Returns
         /// Return description
         fn encoder(&self) -> &dyn super::FtpEncoder;
-        /// Builds a new concrete [`FtpClientInternal`] over the provided `hostname` and optional `port`.
+        /// Tries to connect to the [`FtpClientInternal`] to provided `hostname:port`.
+        ///
+        /// # Arguments
+        /// * hostname - The hostname of the FTP host, which can be a plain text IP.
+        /// * ctrl_port - The port to use to set the control stream.
+        /// 
+        /// # Errors
+        /// To be specified by the implementor.
+        /// See [`super::Error`].
+        fn connect(&mut self, hostname: &str, ctrl_port: &str) -> super::Result<()>;
+        /// Builds a new concrete [`FtpClientInternal`] over the provided `hostname:port`.
         ///
         /// # Arguments
         /// * hostname - The hostname of the FTP host, which can be a plain text IP.
@@ -141,6 +151,25 @@ pub trait FtpClient: FtpClientInternal {
         };
 
         <Self as FtpClientInternal>::new(hostname, eport)
+    }
+    /// Tries to connect to the [`FtpClient`] to provided `hostname` with optional `port`.
+    /// 
+    /// # Arguments
+    /// * hostname - The hostname of the FTP host, which can be a plain-text IP.
+    /// * ctrl_port - Optional specific port of the control stream.
+    ///     If `None`, uses the default port `21`.
+    /// 
+    /// # Errors
+    /// Specific to the implementation.
+    /// Would typically be things as a [`FtpStream`] [`stream::Error`] encapsulation.
+    /// See [`Error`].
+    fn connect(&mut self, hostname: &str, ctrl_port: Option<&str>) -> Result<()> {
+        let eport = match ctrl_port {
+            Some(p) => p,
+            None => "21",
+        };
+
+        <Self as FtpClientInternal>::connect(self, hostname, eport)
     }
     /// Sends the provided UTF-8 string command to the host over the control stream.
     ///  

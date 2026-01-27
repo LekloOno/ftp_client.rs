@@ -44,4 +44,9 @@ impl FtpClientInternal for TcpFtpClient {
         self.open_data_read(&ip.to_string(), &port.to_string())
             .map_err(crate::Error::from)
     }
+    
+    fn connect(&mut self, hostname: &str, ctrl_port: &str) -> crate::Result<()> {
+        self.stream = TcpFtpStream::new(hostname, ctrl_port)?;
+        Ok(())
+    }
 }
