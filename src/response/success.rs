@@ -23,9 +23,6 @@ pub enum FtpSuccessRes {
     RequestedFileActionCompleted {msg: String},
     #[response_code(227)]
     EnteringPassiveMode {msg: String},
-    // Got this code on this 
-    #[response_code(293)]
-    UnknownWeirdCode {msg: String},
 }
 
 /// Should later take encoder into account.
