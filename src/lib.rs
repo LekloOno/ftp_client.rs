@@ -50,9 +50,19 @@ mod private {
     /// > This might not require to be dynamically interchangeable, and we could argue this could be generically-typed 
     /// instead of dynamically dispatched. To argue.
     pub trait FtpClientInternal {
-        /// A helper to quickly setup a base pasv data connection. <br/>
-        /// It should open the data read stream.
-        fn open_pasv_data_internal(&mut self) -> super::Result<()>;
+        /// Builds a new concrete [`FtpClientInternal`] over the provided `hostname:port`.
+        ///
+        /// # Arguments
+        /// * hostname - The hostname of the FTP host, which can be a plain text IP.
+        /// * ctrl_port - The port to use to set the control stream.
+        ///
+        /// # Returns
+        /// A concrete instance of the implementing [`FtpClientInternal`] with a control port connected to the provided host.
+        /// 
+        /// # Errors
+        /// To be specified by the implementor.
+        /// See [`super::Error`].
+        fn new(hostname: &str, ctrl_port: &str) -> super::Result<Self> where Self: Sized;
         /// Retrieves the hostname of the currently established control stream.
         /// 
         /// By "currently established", what is truly meant is the 'last' connection,
@@ -107,19 +117,9 @@ mod private {
         /// To be specified by the implementor.
         /// See [`super::Error`].
         fn connect(&mut self, hostname: &str, ctrl_port: &str) -> super::Result<()>;
-        /// Builds a new concrete [`FtpClientInternal`] over the provided `hostname:port`.
-        ///
-        /// # Arguments
-        /// * hostname - The hostname of the FTP host, which can be a plain text IP.
-        /// * ctrl_port - The port to use to set the control stream.
-        ///
-        /// # Returns
-        /// A concrete instance of the implementing [`FtpClientInternal`] with a control port connected to the provided host.
-        /// 
-        /// # Errors
-        /// To be specified by the implementor.
-        /// See [`super::Error`].
-        fn new(hostname: &str, ctrl_port: &str) -> super::Result<Self> where Self: Sized;
+        /// A helper to quickly setup a base pasv data connection. <br/>
+        /// It should open the data read stream.
+        fn open_pasv_data_internal(&mut self) -> super::Result<()>;
     } 
 }
 
