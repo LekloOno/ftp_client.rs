@@ -38,6 +38,7 @@ impl FtpClientInternal for TcpFtpClient {
     
     fn connect(&mut self, hostname: &str, ctrl_port: &str) -> crate::Result<()> {
         self.stream = TcpFtpStream::new(hostname, ctrl_port)?;
+        self.read_response()?;
         Ok(())
     }
 
