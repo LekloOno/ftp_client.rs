@@ -59,10 +59,27 @@ impl FtpClientInternal for TcpFtpClient {
     }
     
     fn authenticate_internal(&mut self) -> crate::Result<()> {
-        //crate::log::send_and_read(&FtpBaseCommands::User { username: "anonymous".to_string() }, self);
-        //crate::log::send_and_read(&FtpBaseCommands::Pass { password: "pswd".to_string() }, self);
-        FtpBaseCommands::User { username: "anonymous".to_string() }.send_and_res(self)?;
-        FtpBaseCommands::Pass { password: "pswd".to_string() }.send_and_res(self)?;
+        let user_cmd = FtpBaseCommands::User { username: "anonymous".to_string() };
+        is_valid_auth_res(user_cmd.send_and_res(self))?;
+
+        let pswd_cmd = FtpBaseCommands::Pass { password: "pswd".to_string() };
+        is_valid_auth_res(pswd_cmd.send_and_res(self))?;
         Ok(())
+    }
+}
+
+fn is_valid_auth_res(res: crate::Result<crate::FtpSuccessRes>) -> crate::Result<()> {
+    let Err(error) = res else {
+        return Ok(());
+    };
+
+    let crate::Error::ResponseError(res) = &error else {
+        return Err(error);
+    };
+
+    match res {
+        crate::response::Error::PreliminaryReply(_ftp_preliminary_reply) => Ok(()),
+        | crate::response::Error::IntermediateReply(_ftp_intermediate_reply) => Ok(()),
+        _ => Err(error),
     }
 }
