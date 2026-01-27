@@ -21,7 +21,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Decoding is handled by -
 /// - [`FtpEncoder::decode`]
 /// - [`FtpEncoder::hyphen`]
-/// - not yet provided - [`FtpEncoder::eof`]
 /// - [`FtpEncoder::response_code_len`]
 /// - [`FtpEncoder::decode_response_code`]
 /// 
@@ -42,16 +41,18 @@ pub trait FtpEncoder {
     /// # Lifetimes
     /// The string is not owned, it is referencing the provided bytes.
     fn decode<'a>(&self, bytes: &'a [u8]) -> Result<&'a str>;
-    
-    /// Retrieves this encoding's definition of Carriage Return + Line Feed (rust "\r\n")
+
+    /// Retrieves this encoding's definition of Carriage Return + Line Feed sequence (rust "\r\n")
     /// 
     /// # Notes
-    /// It is notably used to encode commands, as they should end with such CRLF.
+    /// It is notably used to encode commands, as they should end with such CRLF.<br/>
+    /// This would usually be 0x0D and 0x0A.
     fn crlf(&self) -> &'static [u8];
-    /// Retrieves this encoding's definition of a hyphen (rust "-")
+    /// Retrieves this encoding's definition of a hyphen sequence (rust "-")
     /// 
     /// # Notes
     /// It is notably used to decode multi-line responses.
+    /// This would usually be 0x2D.
     fn hyphen(&self) -> &'static [u8];
     
     /// Retrieves the number of bytes a response code takes in this encoder's format.
