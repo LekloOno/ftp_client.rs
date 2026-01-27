@@ -24,7 +24,7 @@ impl FtpClientInternal for TcpFtpClient {
     }
     
     fn hostname(&self) -> &str { &self.hostname }
-    
+
     fn port(&self) -> &str { &self.port }
 
     fn stream(&self) -> &dyn crate::FtpStream {
@@ -48,13 +48,15 @@ impl FtpClientInternal for TcpFtpClient {
         let _ = &FtpBaseCommands::Pasv.send(self)?;
         let res = FtpClient::read_response(self)?;
 
-        let crate::FtpSuccessRes::EnteringPassiveMode {msg} = res else {
-            panic!("Unexpected response {res}");
-        };
+        match res {
+            crate::FtpSuccessRes::ServiceReady { msg: _ } => Ok(()),
+            crate::FtpSuccessRes::EnteringPassiveMode { msg } => {
+                let (ip, port) = crate::response::success::parse_pasv_reply(&msg).expect("msg");
 
-        let (ip, port) = crate::response::success::parse_pasv_reply(&msg).expect("msg");
-
-        self.open_data_read(&ip.to_string(), &port.to_string())
-            .map_err(crate::Error::from)
+                self.open_data_read(&ip.to_string(), &port.to_string())
+                    .map_err(crate::Error::from)
+            },
+            _ => panic!("Unexpected response {res}"),
+        }
     }
 }
