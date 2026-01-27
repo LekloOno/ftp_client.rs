@@ -7,6 +7,8 @@ use crate::{FtpClient, FtpClientInternal, basic::{command::FtpBaseCommands, enco
 /// - a [`TcpFtpStream`]
 /// - a [`Utf8FtpEncoder`]
 pub struct TcpFtpClient {
+    hostname: String,
+    port: String,
     stream: TcpFtpStream,
     encoder: Utf8FtpEncoder,
 }
@@ -26,6 +28,8 @@ impl FtpClientInternal for TcpFtpClient {
 
     fn new(hostname: &str, ctrl_port: &str) -> crate::Result<Self> where Self: Sized {
         Ok(Self {
+            hostname: hostname.to_string(),
+            port: ctrl_port.to_string(),
             stream: TcpFtpStream::new(hostname, ctrl_port)?,
             encoder: Utf8FtpEncoder{},
         })
@@ -49,4 +53,7 @@ impl FtpClientInternal for TcpFtpClient {
         self.stream = TcpFtpStream::new(hostname, ctrl_port)?;
         Ok(())
     }
+    
+    fn hostname(&self) -> &str { &self.hostname }
+    fn port(&self) -> &str { &self.port }
 }

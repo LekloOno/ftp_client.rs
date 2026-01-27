@@ -53,6 +53,16 @@ mod private {
         /// A helper to quickly setup a base pasv data connection. <br/>
         /// It should open the data read stream.
         fn open_pasv_data_internal(&mut self) -> super::Result<()>;
+        /// Retrieves the hostname of the currently established control stream.
+        /// 
+        /// By "currently established", what is truly meant is the 'last' connection,
+        /// as this method should always return a value even if the connection got lost/closed.
+        fn hostname(&self) -> &str;
+        /// Retrieves the port of the currently established control stream.
+        /// 
+        /// By "currently established", what is truly meant is the 'last' connection,
+        /// as this method should always return a value even if the connection got lost/closed.
+        fn port(&self) -> &str;
         /// Retrieves the current immutable FTP stream of the client.
         /// 
         /// # Notes
@@ -170,6 +180,13 @@ pub trait FtpClient: FtpClientInternal {
         };
 
         <Self as FtpClientInternal>::connect(self, hostname, eport)
+    }
+    /// Tries to reconnect the control stream to the last connected host, typically used
+    /// to recover network errors and shutdowns.
+    fn reconnect(&mut self) -> Result<()> {
+        let hostname = &self.hostname().to_string();
+        let port = &self.port().to_string();
+        <Self as FtpClientInternal>::connect(self, hostname, port)
     }
     /// Sends the provided UTF-8 string command to the host over the control stream.
     ///  
