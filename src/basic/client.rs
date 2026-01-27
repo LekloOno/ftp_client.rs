@@ -1,5 +1,11 @@
 use crate::{FtpClient, FtpClientInternal, basic::{command::FtpBaseCommands, encoder::Utf8FtpEncoder, stream::TcpFtpStream}, command::FtpCommand, stream::FtpStream};
 
+/// Provides a standard TCP based FTP client.
+/// 
+/// # Notes
+/// It is composed of
+/// - a [`TcpFtpStream`]
+/// - a [`Utf8FtpEncoder`]
 pub struct TcpFtpClient {
     stream: TcpFtpStream,
     encoder: Utf8FtpEncoder,

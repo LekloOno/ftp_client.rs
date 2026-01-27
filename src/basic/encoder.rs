@@ -2,6 +2,13 @@ use crate::FtpResponseCode;
 use crate::encode::{FtpEncoder, Result};
 use crate::encode::Error;
 
+/// Provides a simple UTF-8 encoder. </br>
+/// 
+/// # Notes
+/// The implementation is very straightforward since rust String system is UTF-8 itself.
+/// 
+/// Most modern FTP server rely on either UTF-8 or ASCII, which directly binds to UTF-8. </br>
+/// Thus, an UTF-8 encoder is a reasonnable default.
 pub struct Utf8FtpEncoder;
 
 impl FtpEncoder for Utf8FtpEncoder {
@@ -17,9 +24,7 @@ impl FtpEncoder for Utf8FtpEncoder {
     fn crlf(&self) -> &'static [u8] { b"\r\n" }
     fn hyphen(&self) -> &'static [u8] { b"-" }
     
-    fn response_code_len(&self) -> usize {
-        3
-    }
+    fn response_code_len(&self) -> usize { 3 }
     
     fn decode_response_code(&self, bytes: &[u8]) -> Result<FtpResponseCode> {
         let sized_bytes = 

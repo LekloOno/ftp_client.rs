@@ -3,6 +3,11 @@ use std::net::TcpStream;
 use crate::stream::{FtpStream, Result};
 use crate::stream::Error;
 
+/// Provides a simple conventionnal dual-channel TcpStream for FTP connections.
+/// 
+/// # Notes
+/// It uses a [`TcpStream`] as read/write control stream and encapsulates the read/write data stream in a [`Option<TcpStream>`]. <br/>
+/// Since data stream is a single TcpStream, [`TcpFtpStream::open_data_read`] and [`TcpFtpStream::open_data_write`] are the same. 
 pub struct TcpFtpStream {
     control: TcpStream,
     data: Option<TcpStream>,

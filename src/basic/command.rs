@@ -1,5 +1,8 @@
 use crate::command::FtpCommand;
 
+/// Provides a base set of FTP commands.
+/// 
+/// It implements [`FtpCommand`] trait.
 pub enum FtpBaseCommands {
     User { username: String },
     Pass { password: String },
