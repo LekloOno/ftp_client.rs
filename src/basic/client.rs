@@ -9,6 +9,8 @@ use crate::{FtpClient, FtpClientInternal, basic::{command::FtpBaseCommands, enco
 pub struct TcpFtpClient {
     hostname: String,
     port: String,
+    username: String,
+    password: String,
     stream: TcpFtpStream,
     encoder: Utf8FtpEncoder,
 }
@@ -18,26 +20,21 @@ impl FtpClientInternal for TcpFtpClient {
         Ok(Self {
             hostname: hostname.to_string(),
             port: ctrl_port.to_string(),
+            username: "anonymous".to_string(),
+            password: "".to_string(),
             stream: TcpFtpStream::new(hostname, ctrl_port)?,
             encoder: Utf8FtpEncoder{},
         })
     }
     
     fn hostname(&self) -> &str { &self.hostname }
-
     fn port(&self) -> &str { &self.port }
+    fn username(&self) -> &str { &self.username }
+    fn password(&self) -> &str { &self.password }
 
-    fn stream(&self) -> &dyn crate::FtpStream {
-        &self.stream
-    }
-
-    fn stream_mut(&mut self) -> &mut dyn crate::FtpStream {
-        &mut self.stream
-    }
-
-    fn encoder(&self) -> &dyn crate::encode::FtpEncoder {
-        &self.encoder
-    }
+    fn stream(&self) -> &dyn crate::FtpStream { &self.stream }
+    fn stream_mut(&mut self) -> &mut dyn crate::FtpStream { &mut self.stream }
+    fn encoder(&self) -> &dyn crate::encode::FtpEncoder { &self.encoder }
     
     fn connect(&mut self, hostname: &str, ctrl_port: &str) -> crate::Result<()> {
         self.stream = TcpFtpStream::new(hostname, ctrl_port)?;
@@ -58,5 +55,11 @@ impl FtpClientInternal for TcpFtpClient {
             },
             _ => panic!("Unexpected response {res}"),
         }
+    }
+    
+    fn authenticate_internal(&mut self) -> crate::Result<()> {
+        FtpBaseCommands::User { username: "anonymous".to_string() }.send_and_res(self)?;
+        FtpBaseCommands::Pass { password: "pswd".to_string() }.send_and_res(self)?;
+        Ok(())
     }
 }

@@ -73,6 +73,10 @@ mod private {
         /// By "currently established", what is truly meant is the 'last' connection,
         /// as this method should always return a value even if the connection got lost/closed.
         fn port(&self) -> &str;
+        /// Retrieves the FTP session's username.
+        fn username(&self) -> &str;
+        /// Retrieves the FTP session's password.
+        fn password(&self) -> &str;
         /// Retrieves the current immutable FTP stream of the client.
         /// 
         /// # Notes
@@ -120,6 +124,13 @@ mod private {
         /// A helper to quickly setup a base pasv data connection. <br/>
         /// It should open the data read stream.
         fn open_pasv_data_internal(&mut self) -> super::Result<()>;
+        /// A helper to simply setup authentication.
+        /// 
+        /// Essentially, this function would typically do the sequence :
+        /// - USER, wait for response
+        /// - PWD, wait for response
+        /// - propagate underlying errors
+        fn authenticate_internal(&mut self) -> super::Result<()>;
     } 
 }
 
@@ -377,6 +388,16 @@ pub trait FtpClient: FtpClientInternal {
     /// A helper to quickly setup a base pasv data connection. <br/>
     fn open_pasv_data(&mut self) -> Result<()> {
         self.open_pasv_data_internal()
+    }
+
+    /// A helper to simply setup authentication.
+    /// 
+    /// Essentially, this function would typically do the sequence :
+    /// - USER, wait for response
+    /// - PWD, wait for response
+    /// - propagate underlying errors
+    fn authenticate(&mut self) -> Result<()> {
+        self.authenticate_internal()
     }
 }
 
