@@ -32,6 +32,35 @@ pub use error::{
 pub type FtpResult = std::result::Result<FtpSuccessRes, Error>;
 
 /// A helper trait to build FTP responses.
+/// 
+/// Procedural macros have been provided crate to derive
+/// - this trait
+/// - [`std::fmt::Display`]
+/// - `From<Self> for FtpResult`
+/// 
+/// It enables a simple and coherent implementation as:
+/// ```
+/// #[derive(Debug, FtpResponseEnum)]
+/// #[ftp_result(false)]
+/// pub enum FtpSuccessRes {
+///     #[response_code(220)]
+///     ServiceReady { msg: String },
+///     #[response_code(230)]
+///     UserLoggedInProceed {msg: String},
+///     #[response_code(257)]
+///     PathNameCreated {msg: String},
+///     #[response_code(226)]
+///     ClosingDataConnection {msg: String},
+///     #[response_code(250)]
+///     RequestedFileActionCompleted {msg: String},
+///     #[response_code(227)]
+///     EnteringPassiveMode {msg: String},
+/// }
+/// ```
+/// 
+/// You can read more of its documentation on the dedicated crates :
+/// - [ftp_response_derive](https://gitlab.univ-lille.fr/m1_sr1/ftp_client/-/tree/main/ftp_response_derive)
+/// - [ftp_result_derive](https://gitlab.univ-lille.fr/m1_sr1/ftp_client/-/tree/main/ftp_result_derive)
 pub trait FtpResponse {
     /// Builds an FTP response instance the xyz response code.
     /// 
