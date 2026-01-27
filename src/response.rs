@@ -48,6 +48,11 @@ pub trait FtpResponse {
     fn from_bytes(code: &FtpResponseCode, body: &[u8]) -> Option<Self> where Self: Sized;
 }
 
+/// Parses the provided [`FtpResponseCode`] and response `body` as an [`FtpResult`].
+/// 
+/// # Arguments
+/// * code  - a reference to an [`FtpResponseCode`].
+/// * body  - the bytes content of the response's body.
 pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
     if code.outcome() == 2 {
         return FtpSuccessRes::from_bytes(code, body)
@@ -58,6 +63,8 @@ pub fn response_from(code: &FtpResponseCode, body: &[u8]) -> FtpResult {
         .unwrap_or(Error::UnknownCode { code: code.clone() }))
 }
 
+/// A helper that extracts recoverable responses to [`Ok()`],
+/// but propagates unrecoverable ones.
 pub fn can_continue(result: crate::Result<FtpSuccessRes>) -> crate::Result<()> {
     let Err(error) = &result else {
         return Ok(());
