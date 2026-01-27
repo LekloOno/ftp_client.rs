@@ -1,5 +1,11 @@
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct FtpResponseCode(u16);
+
+impl std::fmt::Debug for FtpResponseCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FtpResponseCode({})", Into::<u16>::into(self))
+    }
+}
 
 /// Wraps an FtpResponseCode under a bytes-packed structure
 /// with an explicit interface.
