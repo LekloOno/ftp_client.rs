@@ -299,8 +299,8 @@ pub trait FtpClient: FtpClientInternal {
 
         loop {
             if let Some(i_n_read) = finder.find(content) {
-                n_read += i_n_read;
-                body.extend_from_slice(&content[..n_read + crlf.len()]);
+                n_read += i_n_read + crlf.len();
+                body.extend_from_slice(&content[..n_read]);
                 break;
             } else {
                 n_read += content.len();
@@ -311,7 +311,7 @@ pub trait FtpClient: FtpClientInternal {
 
         let response = response::response_from(&code, &body);
 
-        buf_reader.consume(n_read + crlf.len());
+        buf_reader.consume(n_read);
 
         response.map_err(Error::from)
     }
