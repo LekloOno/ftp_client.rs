@@ -286,7 +286,7 @@ pub trait FtpClient: FtpClientInternal {
         let mut buf_reader = io::BufReader::new(
             self.stream_mut().control_read()
         );
-        let content = buf_reader.fill_buf()?;
+        let mut content = buf_reader.fill_buf()?;
 
         if content.starts_with(&hyphen) {
             todo!("Multiline responses not handled yet.");
@@ -294,9 +294,22 @@ pub trait FtpClient: FtpClientInternal {
 
         let finder = memchr::memmem::Finder::new(crlf);
         
-        let n_read = finder.find(content).unwrap(); // LAZY UNWRAP
-        let body = &content[..n_read + crlf.len()];
-        let response = response::response_from(&code, body);
+        let mut n_read = 0;
+        let mut body: Vec<u8> = Vec::new();
+
+        loop {
+            if let Some(i_n_read) = finder.find(content) {
+                n_read += i_n_read;
+                body.extend_from_slice(&content[..n_read + crlf.len()]);
+                break;
+            } else {
+                n_read += content.len();
+                body.extend_from_slice(&content);
+                content = buf_reader.fill_buf()?;
+            }
+        };
+
+        let response = response::response_from(&code, &body);
 
         buf_reader.consume(n_read + crlf.len());
 
